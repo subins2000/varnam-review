@@ -1,34 +1,42 @@
 import { Request } from 'express';
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 import { AddSuggestionDto } from './dto/add-suggestion.dto';
-import { Suggestion } from './schemas/suggestion';
+import { Suggestion } from './entities/suggestion.entity';
 
 import { VoteSuggestionDto } from './dto/vote-suggestion.dto';
-import { Vote } from './schemas/vote';
+import { Vote } from './entities/vote.entity';
 
 @Injectable()
 export class SuggestionsService {
   constructor(
-    @InjectModel(Suggestion.name) private readonly suggestionModel: Model<Suggestion>,
-    @InjectModel(Vote.name) private readonly voteModel: Model<Vote>
+    @InjectRepository(Suggestion)
+    @InjectRepository(Vote)
+    private readonly suggestionRepository: Repository<Suggestion>,
+    private readonly voteRepository: Repository<Vote>,
   ) {}
 
-  async create(suggestion: AddSuggestionDto): Promise<Suggestion> {
-    const createdSuggestion = new this.suggestionModel(suggestion);
-    return createdSuggestion.save();
+  async create(addSuggestionDto: AddSuggestionDto): Promise<Suggestion> {
+    const suggestion = new Suggestion()
+    suggestion.lang = addSuggestionDto.lang
+    suggestion.pattern = addSuggestionDto.pattern
+    suggestion.word = addSuggestionDto.word
+
+    return this.suggestionRepository.save(suggestion)
   }
 
   async findAll(): Promise<Suggestion[]> {
-    return this.suggestionModel.find().exec();
+    return this.suggestionRepository.find()
   }
 
-  async vote(request: Request, voteData: VoteSuggestionDto): Promise<Vote> {
-    voteData.ip = request.ip
-    const createdVote = new this.voteModel(voteData);
-    return createdVote.save();
+  async vote(request: Request, voteSuggestionDto: VoteSuggestionDto): Promise<Vote> {
+    const vote = new Vote()
+    vote.sid = voteSuggestionDto.sid
+    vote.ip = voteSuggestionDto.ip
+
+    return this.voteRepository.save(vote)
   }
 }

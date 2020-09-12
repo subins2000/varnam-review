@@ -1,12 +1,17 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { SuggestionsModule } from './suggestions/suggestions.module';
 
+import { Suggestion } from './suggestions/entities/suggestion.entity';
+import { Vote } from './suggestions/entities/vote.entity';
+
 require('dotenv').config()
-const dbConnection = MongooseModule.forRoot(process.env.DB_URL, {
-  useNewUrlParser: true,
-  useCreateIndex: true
+const dbConnection = TypeOrmModule.forRoot({
+  url: process.env.DB_URL,
+  entities: [Suggestion, Vote],
+  autoLoadEntities: true,
+  synchronize: true,
 })
 
 @Module({

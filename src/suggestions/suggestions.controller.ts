@@ -5,10 +5,10 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 import { SuggestionsService } from './suggestions.service';
 
 import { AddSuggestionDto } from './dto/add-suggestion.dto';
-import { Suggestion } from './schemas/suggestion';
+import { Suggestion } from './entities/suggestion.entity';
 
 import { VoteSuggestionDto } from './dto/vote-suggestion.dto';
-import { Vote } from './schemas/vote';
+import { Vote } from './entities/vote.entity';
 
 @Controller('suggestions')
 export class SuggestionsController {
