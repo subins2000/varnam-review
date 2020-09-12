@@ -1,10 +1,17 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { MongooseModule } from '@nestjs/mongoose';
+
+import { SuggestionsModule } from './suggestions/suggestions.module';
+
+const dbConnection = MongooseModule.forRoot(process.env.DB_URL, {
+  useNewUrlParser: true,
+  useCreateIndex: true
+})
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    dbConnection,
+    SuggestionsModule
+  ]
 })
 export class AppModule {}
