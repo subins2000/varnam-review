@@ -1,4 +1,4 @@
 export class AddSuggestionDto {
-  pattern: number;
+  pattern: string;
   word: string;
 }

@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { SuggestionsModule } from './suggestions/suggestions.module';
 
+require('dotenv').config()
 const dbConnection = MongooseModule.forRoot(process.env.DB_URL, {
   useNewUrlParser: true,
   useCreateIndex: true
