@@ -1,5 +1,4 @@
-import { Controller, Get, Post } from '@nestjs/common';
-import { Body } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 
 import { AddSuggestionDto } from './dto/add-suggestion.dto';
 import { SuggestionsService } from './suggestions.service';
