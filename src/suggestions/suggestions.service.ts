@@ -68,8 +68,19 @@ export class SuggestionsService {
         return 'voted'
       }
     } else {
+      let ip = request.ip
+
+      if (request.headers['x-forwarded-for']) {
+        const xf = request.headers['x-forwarded-for']
+        if (xf instanceof Array) {
+          ip = xf[0]
+        } else {
+          ip = xf
+        }
+      }
+
       const vote = new Vote()
-      vote.ip = request.ip
+      vote.ip = ip
 
       suggestion.votes.push(vote)
       const updated = await this.suggestionRepository.update(voteSuggestionDto.sid, suggestion)
