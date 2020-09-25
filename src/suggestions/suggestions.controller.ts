@@ -15,8 +15,8 @@ export class SuggestionsController {
   constructor(private readonly suggestionsService: SuggestionsService) {}
 
   @Get()
-  findAll(): Promise<SuggestionWithVoteCount[]> {
-    return this.suggestionsService.findAll();
+  findAll(@Req() request: Request,): Promise<SuggestionWithVoteCount[]> {
+    return this.suggestionsService.findAll(request);
   }
 
   @Post()
@@ -29,8 +29,8 @@ export class SuggestionsController {
     const vote = await this.suggestionsService.vote(request, voteSuggestion);
     if (vote === 'no-suggestion') {
       throw new HttpException('suggestion-not-found', HttpStatus.NOT_FOUND);
-    } else if (vote === 'voted') {
-      throw new HttpException('voted', HttpStatus.FORBIDDEN);
+    } else {
+      throw new HttpException(vote, HttpStatus.CREATED);
     }
   }
 }

@@ -28,7 +28,7 @@ export class SuggestionsService {
     return this.suggestionRepository.save(suggestion)
   }
 
-  async findAll(): Promise<SuggestionWithVoteCount[]> {
+  async findAll(request: Request): Promise<SuggestionWithVoteCount[]> {
     const items = await this.suggestionRepository.find()
     const results = []
 
@@ -36,7 +36,10 @@ export class SuggestionsService {
       const length = item.votes.length
       let newItem: SuggestionWithVoteCount = {
         ...item,
-        ...{votes: length}
+        ...{
+          votes: length,
+          voted: item.votes.find(voted => voted.ip === request.ip) ? true : false
+        }
       }
       results.push(newItem)
     })
@@ -51,18 +54,25 @@ export class SuggestionsService {
       return 'no-suggestion'
     }
 
-    if (suggestion.votes.find(voted => voted.ip === request.ip)) {
-      return 'voted'
-    }
+    const votedItem = suggestion.votes.find(voted => voted.ip === request.ip)
 
-    const vote = new Vote()
-    vote.ip = request.ip
+    if (votedItem) {
+      suggestion.votes = suggestion.votes.filter(voted => voted.ip !== request.ip)
+      const updated = await this.suggestionRepository.update(voteSuggestionDto.sid, suggestion)
 
-    suggestion.votes.push(vote)
+      if (updated) {
+        return 'voted'
+      }
+    } else {
+      const vote = new Vote()
+      vote.ip = request.ip
 
-    const updated = await this.suggestionRepository.update(voteSuggestionDto.sid, suggestion)
-    if (updated) {
-      return 'success'
+      suggestion.votes.push(vote)
+      const updated = await this.suggestionRepository.update(voteSuggestionDto.sid, suggestion)
+
+      if (updated) {
+        return 'success'
+      }
     }
   }
 }
