@@ -8,6 +8,7 @@ import { Vote } from './suggestions/entities/vote.entity';
 
 require('dotenv').config()
 const dbConnection = TypeOrmModule.forRoot({
+  type: 'mongodb',
   url: process.env.DB_URL,
   entities: [Suggestion, Vote],
   autoLoadEntities: true,

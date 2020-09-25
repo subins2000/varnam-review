@@ -2,10 +2,10 @@ import { Request } from 'express';
 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 
 import { AddSuggestionDto } from './dto/add-suggestion.dto';
-import { Suggestion } from './entities/suggestion.entity';
+import { Suggestion, SuggestionWithVoteCount } from './entities/suggestion.entity';
 
 import { VoteSuggestionDto } from './dto/vote-suggestion.dto';
 import { Vote } from './entities/vote.entity';
@@ -14,29 +14,55 @@ import { Vote } from './entities/vote.entity';
 export class SuggestionsService {
   constructor(
     @InjectRepository(Suggestion)
-    @InjectRepository(Vote)
     private readonly suggestionRepository: Repository<Suggestion>,
-    private readonly voteRepository: Repository<Vote>,
   ) {}
 
   async create(addSuggestionDto: AddSuggestionDto): Promise<Suggestion> {
     const suggestion = new Suggestion()
+
     suggestion.lang = addSuggestionDto.lang
     suggestion.pattern = addSuggestionDto.pattern
     suggestion.word = addSuggestionDto.word
+    suggestion.votes = []
 
     return this.suggestionRepository.save(suggestion)
   }
 
-  async findAll(): Promise<Suggestion[]> {
-    return this.suggestionRepository.find()
+  async findAll(): Promise<SuggestionWithVoteCount[]> {
+    const items = await this.suggestionRepository.find()
+    const results = []
+
+    items.forEach(item => {
+      const length = item.votes.length
+      let newItem: SuggestionWithVoteCount = {
+        ...item,
+        ...{votes: length}
+      }
+      results.push(newItem)
+    })
+    
+    return results
   }
 
-  async vote(request: Request, voteSuggestionDto: VoteSuggestionDto): Promise<Vote> {
-    const vote = new Vote()
-    vote.sid = voteSuggestionDto.sid
-    vote.ip = voteSuggestionDto.ip
+  async vote(request: Request, voteSuggestionDto: VoteSuggestionDto): Promise<String> {
+    const suggestion = await this.suggestionRepository.findOne(voteSuggestionDto.sid)
 
-    return this.voteRepository.save(vote)
+    if (!suggestion) {
+      return 'no-suggestion'
+    }
+
+    if (suggestion.votes.find(voted => voted.ip === request.ip)) {
+      return 'voted'
+    }
+
+    const vote = new Vote()
+    vote.ip = request.ip
+
+    suggestion.votes.push(vote)
+
+    const updated = await this.suggestionRepository.update(voteSuggestionDto.sid, suggestion)
+    if (updated) {
+      return 'success'
+    }
   }
 }

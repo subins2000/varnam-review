@@ -1,9 +1,9 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, ObjectID, ObjectIdColumn } from 'typeorm';
 
 @Entity()
 export class Vote {
-  @Column()
-  sid: string;
+  @ObjectIdColumn()
+  id: ObjectID
 
   @Column()
   ip: string
