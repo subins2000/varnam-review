@@ -58,7 +58,18 @@ export class SuggestionsService {
       return 'no-suggestion'
     }
 
-    const votedItem = suggestion.votes.find(voted => voted.ip === request.ip)
+    let ip = request.ip
+
+    if (request.headers['x-forwarded-for']) {
+      const xf = request.headers['x-forwarded-for']
+      if (xf instanceof Array) {
+        ip = xf[0]
+      } else {
+        ip = xf
+      }
+    }
+
+    const votedItem = suggestion.votes.find(voted => voted.ip === ip)
 
     if (votedItem) {
       suggestion.votes = suggestion.votes.filter(voted => voted.ip !== request.ip)
@@ -68,17 +79,6 @@ export class SuggestionsService {
         return 'voted'
       }
     } else {
-      let ip = request.ip
-
-      if (request.headers['x-forwarded-for']) {
-        const xf = request.headers['x-forwarded-for']
-        if (xf instanceof Array) {
-          ip = xf[0]
-        } else {
-          ip = xf
-        }
-      }
-
       const vote = new Vote()
       vote.ip = ip
 
