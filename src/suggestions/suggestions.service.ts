@@ -28,8 +28,12 @@ export class SuggestionsService {
     return this.suggestionRepository.save(suggestion)
   }
 
-  async findAll(request: Request): Promise<SuggestionWithVoteCount[]> {
-    const items = await this.suggestionRepository.find()
+  async findAll(request: Request, lang: string): Promise<SuggestionWithVoteCount[]> {
+    const items = await this.suggestionRepository.find({
+      where: {
+        lang: {$eq: lang}
+      }
+    })
     const results = []
 
     items.forEach(item => {
