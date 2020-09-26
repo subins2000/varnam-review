@@ -48,6 +48,8 @@ export class SuggestionsService {
         lang: {$eq: lang}
       }
     })
+    
+    const userIP = this.getIP(request)
     const results = []
 
     items.forEach(item => {
@@ -56,7 +58,7 @@ export class SuggestionsService {
         ...item,
         ...{
           votes: length,
-          voted: item.votes.find(voted => voted.ip === request.ip) ? true : false
+          voted: item.votes.find(voted => voted.ip === userIP) ? true : false
         }
       }
       results.push(newItem)
@@ -72,18 +74,20 @@ export class SuggestionsService {
       return 'no-suggestion'
     }
 
-    const ip = this.getIP(request)
-    const votedItem = suggestion.votes.find(voted => voted.ip === ip)
+    const userIP = this.getIP(request)
+
+    // TODO: better checking. Avoid multiple traversals
+    const votedItem = suggestion.votes.find(voted => voted.ip === userIP)
 
     if (votedItem) {
-      suggestion.votes = suggestion.votes.filter(voted => voted.ip !== request.ip)
+      suggestion.votes = suggestion.votes.filter(voted => voted.ip !== userIP)
       const updated = await this.suggestionRepository.update(voteSuggestionDto.sid, suggestion)
 
       if (updated) {
         return 'voted'
       }
     } else {
-      const vote = new Vote(ip)
+      const vote = new Vote(userIP)
 
       suggestion.votes.push(vote)
       const updated = await this.suggestionRepository.update(voteSuggestionDto.sid, suggestion)
