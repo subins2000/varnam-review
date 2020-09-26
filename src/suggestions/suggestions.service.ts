@@ -16,7 +16,7 @@ export class SuggestionsService {
     private readonly suggestionRepository: Repository<Suggestion>,
   ) {}
 
-  getIP(request: Request) {
+  getIP(request: Request): string {
     let ip = request.ip
 
     if (request.headers['x-forwarded-for']) {
@@ -48,7 +48,7 @@ export class SuggestionsService {
         lang: {$eq: lang}
       }
     })
-    
+
     const userIP = this.getIP(request)
     const results = []
 

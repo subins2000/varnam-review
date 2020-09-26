@@ -11,7 +11,7 @@ export class Vote {
 @Entity()
 export class Suggestion {
   @ObjectIdColumn()
-  id: ObjectID;
+  _id: ObjectID;
 
   @Column()
   ip: string
@@ -25,7 +25,7 @@ export class Suggestion {
   @Column()
   word: string;
 
-  @Column(type => Vote)
+  @Column()
   votes: Vote[]
 }
 
