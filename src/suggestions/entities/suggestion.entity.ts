@@ -1,10 +1,20 @@
 import { Column, Entity, ObjectID, ObjectIdColumn } from 'typeorm';
-import { Vote } from './vote.entity';
+
+export class Vote {
+  ip: string
+
+  constructor (ip: string) {
+    this.ip = ip
+  }
+}
 
 @Entity()
 export class Suggestion {
   @ObjectIdColumn()
   id: ObjectID;
+
+  @Column()
+  ip: string
 
   @Column()
   lang: string;

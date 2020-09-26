@@ -5,10 +5,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, UpdateResult } from 'typeorm';
 
 import { AddSuggestionDto } from './dto/add-suggestion.dto';
-import { Suggestion, SuggestionWithVoteCount } from './entities/suggestion.entity';
+import { Vote, Suggestion, SuggestionWithVoteCount } from './entities/suggestion.entity';
 
 import { VoteSuggestionDto } from './dto/vote-suggestion.dto';
-import { Vote } from './entities/vote.entity';
 
 @Injectable()
 export class SuggestionsService {
@@ -17,9 +16,24 @@ export class SuggestionsService {
     private readonly suggestionRepository: Repository<Suggestion>,
   ) {}
 
-  async create(addSuggestionDto: AddSuggestionDto): Promise<Suggestion> {
+  getIP(request: Request) {
+    let ip = request.ip
+
+    if (request.headers['x-forwarded-for']) {
+      const xf = request.headers['x-forwarded-for']
+      if (xf instanceof Array) {
+        ip = xf[0]
+      } else {
+        ip = xf
+      }
+    }
+    return ip
+  }
+
+  async create(request: Request, addSuggestionDto: AddSuggestionDto): Promise<Suggestion> {
     const suggestion = new Suggestion()
 
+    suggestion.ip = this.getIP(request)
     suggestion.lang = addSuggestionDto.lang
     suggestion.pattern = addSuggestionDto.pattern
     suggestion.word = addSuggestionDto.word
@@ -58,17 +72,7 @@ export class SuggestionsService {
       return 'no-suggestion'
     }
 
-    let ip = request.ip
-
-    if (request.headers['x-forwarded-for']) {
-      const xf = request.headers['x-forwarded-for']
-      if (xf instanceof Array) {
-        ip = xf[0]
-      } else {
-        ip = xf
-      }
-    }
-
+    const ip = this.getIP(request)
     const votedItem = suggestion.votes.find(voted => voted.ip === ip)
 
     if (votedItem) {
@@ -79,8 +83,7 @@ export class SuggestionsService {
         return 'voted'
       }
     } else {
-      const vote = new Vote()
-      vote.ip = ip
+      const vote = new Vote(ip)
 
       suggestion.votes.push(vote)
       const updated = await this.suggestionRepository.update(voteSuggestionDto.sid, suggestion)

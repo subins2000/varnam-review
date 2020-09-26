@@ -20,8 +20,8 @@ export class SuggestionsController {
   }
 
   @Post()
-  async add(@Body() suggestion: AddSuggestionDto) {
-    await this.suggestionsService.create(suggestion);
+  async add(@Req() request: Request, @Body() suggestion: AddSuggestionDto) {
+    await this.suggestionsService.create(request, suggestion);
   }
 
   @Post('vote')

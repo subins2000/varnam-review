@@ -4,13 +4,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SuggestionsModule } from './suggestions/suggestions.module';
 
 import { Suggestion } from './suggestions/entities/suggestion.entity';
-import { Vote } from './suggestions/entities/vote.entity';
 
 require('dotenv').config()
 const dbConnection = TypeOrmModule.forRoot({
   type: 'mongodb',
   url: process.env.DB_URL,
-  entities: [Suggestion, Vote],
+  entities: [Suggestion],
   autoLoadEntities: true,
   synchronize: true,
 })
